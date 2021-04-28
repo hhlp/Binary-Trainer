@@ -1,4 +1,6 @@
 import sys
+import time
+import random
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QCoreApplication, QObject, QRunnable
@@ -12,6 +14,7 @@ class MainWindow(QMainWindow):
         self.initUI()
         self.score = 0
         self.streak = 0
+        
     
     def initUI(self):
         self.top_label = QtWidgets.QLabel(self)
@@ -100,7 +103,6 @@ class MainWindow(QMainWindow):
         font.setWeight(50)
         self.binary_string.setFont(font)
         self.binary_string.setObjectName("binary_string")
-        self.binary_string.setText("00000000.00000000.00000000.00000000")
         
         self.input_octet_1 = QtWidgets.QLineEdit(self)
         self.input_octet_1.setGeometry(QtCore.QRect(50, 250, 101, 31))
@@ -156,7 +158,7 @@ class MainWindow(QMainWindow):
         self.streak_label.setText("Score:")
     
         self.label_result = QtWidgets.QLabel(self)
-        self.label_result.setGeometry(QtCore.QRect(290, 290, 81, 31))
+        self.label_result.setGeometry(QtCore.QRect(290, 290, 105, 31))
         font = QtGui.QFont()
         font.setFamily("Segoe Print")
         font.setPointSize(16)
@@ -164,7 +166,7 @@ class MainWindow(QMainWindow):
         font.setWeight(75)
         self.label_result.setFont(font)
         self.label_result.setObjectName("label_result")
-        self.label_result.setText("Wrong!")
+        self.label_result.setText("")
         
         self.button_check = QtWidgets.QPushButton(self)
         self.button_check.setGeometry(QtCore.QRect(260, 340, 131, 41))
@@ -176,7 +178,50 @@ class MainWindow(QMainWindow):
         self.button_check.setFont(font)
         self.button_check.setObjectName("button_check")
         self.button_check.setText("Check")
+        self.button_check.clicked.connect(self.verify)
+
+    def q_decimal(self):
+        octet_1 = random.randint(0, 255)
+        octet_2 = random.randint(0, 255)
+        octet_3 = random.randint(0, 255)
+        octet_4 = random.randint(0, 255)
+        return f"{octet_1}.{octet_2}.{octet_3}.{octet_4}"
         
+    def q_binary(self, decimal_string):
+        binary_string = ""
+        for num in decimal_string.split("."):
+            binary_string += str("{0:08b}.".format(int(num)))
+        return binary_string[:-1]
+    
+    def question(self):
+        num_string = self.q_decimal()
+        bin_string = self.q_binary(num_string)
+        self.binary_string.setText(bin_string)
+        return num_string
+
+    def verify(self):
+        octet_1 = self.input_octet_1.text()
+        octet_2 = self.input_octet_2.text()
+        octet_3 = self.input_octet_3.text()
+        octet_4 = self.input_octet_4.text()
+        result_string = f"{octet_1}.{octet_2}.{octet_3}.{octet_4}"
+        right_answer = self.question()
+        if right_answer == result_string:
+            self.score += 1
+            self.streak += 1
+            self.label_result.setText("Correct")
+            time.sleep(1)
+            self.label_result.setText("")
+            print("Correct!")
+        else:
+            if self.streak > 0:
+                self.streak -= 1
+            self.label_result.setText("Incorrect")
+            time.sleep(1)
+            self.label_result.setText("")
+            print("Incorrect!")
+        self.question()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
